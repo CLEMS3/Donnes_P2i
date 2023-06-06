@@ -90,8 +90,8 @@ class ArduinoDataHandler:
                 
                 print(f"**Minute atteinte : données exploitées du coude : {donnee_coude_gauche} mouvements/min")
                 #Le correspond à une idpanoplie pour l'instant insérée à la main
-                self.a_inserer.append((donnee_coude_gauche, maintenant, 2, 2)) #On souhaite ajouter ce tuple correspondant à la donnée du coude gauche (0 = Flexion)
-                self.a_inserer.append((donnee_poignet_gauche, maintenant, 1, 1)) #On ajoute aussi le tuple pour la donnée du poignet gauche (2 = accélération angulaire)
+                self.a_inserer.append((donnee_coude_gauche, maintenant, 4, 2)) #On souhaite ajouter ce tuple correspondant à la donnée du coude gauche (0 = Flexion)
+                self.a_inserer.append((donnee_poignet_gauche, maintenant, 3, 1)) #On ajoute aussi le tuple pour la donnée du poignet gauche (2 = accélération angulaire)
                 self.inserer_donnees()
             
             
@@ -111,9 +111,12 @@ class ArduinoDataHandler:
                 
                 print(f"**Minute atteinte : données exploitées du coude : {donnee_coude_droit} mouvements/min")
                 
-                self.a_inserer.append((donnee_coude_droit, maintenant, 3, 0)) #On souhaite ajouter ce tuple correspondant à la donnée du coude droit (0 = Flexion)
-                self.a_inserer.append((donnee_poignet_droit, maintenant, 4, 2)) #On ajoute aussi le tuple pour la donnée du poignet droit (3 = accélération angulaire)
-            
+                self.a_inserer.append((donnee_coude_droit, maintenant, 2, 2)) #On souhaite ajouter ce tuple correspondant à la donnée du coude droit (0 = Flexion)
+                self.a_inserer.append((donnee_poignet_droit, maintenant, 1, 1)) #On ajoute aussi le tuple pour la donnée du poignet droit (3 = accélération angulaire)
+                
+                print("yeah")
+                
+                self.inserer_donnees()
             
             
         elif provenance_paquet == "DOS":
@@ -123,7 +126,8 @@ class ArduinoDataHandler:
             print(f"\nPaquet du dos : élongation {donnee_elongation} min de mauvaise position, son {self.son_minute}")
             
             self.a_inserer.append((float(self.son_minute), maintenant, 6, 4)) #La moyenne sonore n'a pas besoin de traitement complexe (4 = niveau sonore)
-            self.a_inserer.append((donnee_elongation, maintenant, 5, 1)) # (1 = élongation)
+            self.a_inserer.append((donnee_elongation, maintenant, 5, 3)) # (1 = élongation)
+            self.inserer_donnees()
         
             
         else: #Si la provanance n'est ni le dos, ni la gauche, ni la droite (erreur de réception)
@@ -136,6 +140,8 @@ class ArduinoDataHandler:
         compteur_mouvements = 0 #Compte combien de fois on passe de 0 à 1 et inversement
         bit_precedent = -1 #Initialisé à -1 au début, quand il n'y a pas de bit précédent
         
+        #donnees = bin(donnees)[2::]
+        
         for bit in donnees:
             if  (bit_precedent != -1) and (bit != bit_precedent): #S'il y a un changement de 0 à 1 ou inversement :
                 compteur_mouvements += 1
@@ -145,6 +151,14 @@ class ArduinoDataHandler:
         
     def traiter_donnees_poignet(self, donnees):
         """Compte le nombre de mouvements du poignet dans une minute"""
+        # Chaque trame 6 mesures dans une seconde
+        # valeur de vitesse angulaire 4, 5 et 6
+        # norme = racine de la somme des carrées de 4 5 et 6
+        # 360 par minute
+        # ajout des normes ensemble puis multiplier avec 1/6 secondes
+        # on a une valeur d'angle
+        # divison par pi/3 ou pi/2 ce qui donne le nombre répétitif de rotation
+        
         pass #A COMPLETER!!!!!!!!!!!!
     
     def traiter_donnees_elongation(self, donnees):
@@ -157,8 +171,8 @@ class ArduinoDataHandler:
         """Insère les tuples contenus dans 'a_inserer' dans la base de données"""
         valeur_mesure_1, date_mesure_1, idCapteur_1, idTypeMesure_1 = self.a_inserer[0]
         valeur_mesure_2, date_mesure_2, idCapteur_2, idTypeMesure_2 = self.a_inserer[1]
-        valeur_mesure_1 = 1.563
-        valeur_mesure_2 = 5
+        valeur_mesure_2 = 56
+        print("je passe ici")
         cursor = self.connexion_bd.cursor()
         #cursor.execute("INSERT INTO Entreprise(idEntreprise, nomEntreprise, adresseEntreprise) VALUES (5,"Hp","65 rue de linformation Paris")"
         cursor.execute("INSERT INTO Mesure(valeurMesure, dateMesure, idCapteur, idTypeMesure) VALUES (%s,%s,%s,%s)" , [valeur_mesure_1, date_mesure_1, idCapteur_1, idTypeMesure_1])
@@ -167,9 +181,10 @@ class ArduinoDataHandler:
         cursor.close()
         
         
-
-    
         
+        
+        
+    ## bin(16)[2::]
         
 
 
