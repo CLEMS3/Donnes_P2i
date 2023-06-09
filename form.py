@@ -1,5 +1,11 @@
 import tkinter as tk
 import sql
+from PIL import ImageTk, Image
+"""
+ATTENTION : AVANT DE LANCER LE PROGRAMME :
+ -> Se connecter au VPN de l'INSA pour pouvoir acceder à la base de données
+ -> Installer la police de caractère "Titillium Web" (dans le dossier du projet)
+"""
 
 
 criteres_recherche = {
@@ -58,13 +64,25 @@ def store_value_date():
     print("Valeur stockée :", search_text)
 
 window = tk.Tk()
+
+image = Image.open("bg.png")
+photo = ImageTk.PhotoImage(image)
+label = tk.Label(window, image=photo)
+
+label.pack()
+window.title("Génération du rapport")
+window.geometry("800x500")
+window.iconbitmap("ecrivain.ico")
+label = tk.Label(window, text="Génération du rapport", font=("Titillium Web", 20), bg="#504E4B", fg="white")
+label.place(x=265, y=20) 
+
 selected_value = tk.StringVar()
 search_entry = tk.Entry(window, textvariable=selected_value)
-search_entry.pack()
+search_entry.place(x=335, y=100)
 
 
 suggestion_box = tk.Listbox(window)
-suggestion_box.pack()
+suggestion_box.place(x=335, y=120)
 
 search_entry.bind('<KeyRelease>', lambda event: show_suggestions())
 suggestion_box.bind('<<ListboxSelect>>', select_suggestion)
@@ -73,13 +91,13 @@ search_entry.bind('<Return>', store_value_entreprise)
 
 
 selected_option = tk.StringVar()
-selected_option.set("")  # Option sélectionnée par défaut
+selected_option.set("Selectionner")  # Option sélectionnée par défaut
 
 menu = tk.OptionMenu(window, selected_option, *dates)
-menu.pack()
+menu.place(x=342, y=300)
 
 button = tk.Button(window, text='Valider date', command=store_value_date)
-button.pack()
+button.place(x=360, y=350)
 
 def select_prestation():
     cursor.execute("SELECT idPrestation FROM Entreprise, Prestation WHERE nomEntreprise = %s AND dateDebut = %s AND Prestation.idEntreprise = Entreprise.idEntreprise;", (criteres_recherche["nomEntreprise"],criteres_recherche["dateDebut"]))
@@ -89,12 +107,9 @@ def select_prestation():
     print(criteres_recherche["idPrestation"])
 
 button_generator = tk.Button(window, text='Génerer', command=select_prestation)
-button_generator.pack()
+button_generator.place(x=370, y=400)
 
 
 window.mainloop()
 
 
-
-
-window.mainloop()
